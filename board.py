@@ -75,14 +75,14 @@ class CheckersBoard(tk.Tk):
             if (new_piece_type != self.piece):
                 self.canvas.delete(self.draw_piece)  # remove the original piece
 
-                if (self.piece == Piece.black or self.piece == Piece.red):
+                if (new_piece_type == Piece.black or new_piece_type == Piece.red):
                     color = "black" if new_piece_type == Piece.black else "red"
                     self.draw_piece = self.create_piece(self.row, self.column, color)
-                elif (self.piece == Piece.black_king or self.piece == Piece.red_king):
+                elif (new_piece_type == Piece.black_king or new_piece_type == Piece.red_king):
                     color = "black" if new_piece_type == Piece.black else "red"
                     self.draw_piece = self.create_king_piece(self.row, self.column, color)
                 else:
-                    self.draw_piece = self.create_piece(row, column)  # draw no piece
+                    self.draw_piece = self.create_piece(self.row, self.column)  # draw no piece
 
             self.piece = new_piece_type
 
@@ -150,18 +150,20 @@ class CheckersBoard(tk.Tk):
                         fill=self.board_color, tags="board")
                     self.tiles[row, column] = self.Tile(self.canvas, row, column)
 
+        self.move_piece(2, 1, 3, 2)
         #self.tiles[0, 1].update_piece(Piece.red)
         
         #self.redraw(5000)
 
-    def move_piece(self, init_row, init_column, dest_row, dest_column):
-        if (dest_row, dest_column) in self.pieces:
+    def move_piece(self, source_row, source_column, dest_row, dest_column):
+        dest_tile = self.tiles[dest_row, dest_column]
+        if self.tiles[dest_row, dest_column].piece != Piece.no_piece:
             return False # cannot move to an already occupied space
 
-        piece = self.pieces[init_row, init_column]
-        print piece
+        source_tile = self.tiles[source_row, source_column]
 
-        self.canvas.coords(piece, *self.get_piece_coordinates(dest_row, dest_column))
+        dest_tile.update_piece(source_tile.piece)
+        source_tile.update_piece(Piece.no_piece)
 
         # update the dictionary
         #self[dest_row, dest_column] = piece
