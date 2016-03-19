@@ -5,24 +5,24 @@ import sys
 # import random
 
 class Direction:
-    upward = 1
-    both = 0
-    downward = -1
+    Upward = 1
+    Both = 0
+    Downward = -1
 
 
 class Piece:
-    black_king = 2
-    black = 1
-    no_piece = 0
-    red = -1
-    red_king = -2
+    BlackKing = 2
+    Black = 1
+    NoPiece = 0
+    Red = -1
+    RedKing = -2
 
 
 class Team:
-    black = "black"
-    red = "red"
-    no_piece = "no_piece"
-    invalid = "invalid"
+    Black = "black"
+    Red = "red"
+    NoPiece = "no_piece"
+    Invalid = "invalid"
 
 
 class CheckersBoard(tk.Canvas):
@@ -49,13 +49,13 @@ class CheckersBoard(tk.Canvas):
 
             # initialization of the checkers board
             if (row in [0, 1, 2]):
-                self.piece = Piece.black
+                self.piece = Piece.Black
                 self.draw_piece = self.create_piece(row, column, "black")
             elif (row in [5, 6, 7]):
-                self.piece = Piece.red
+                self.piece = Piece.Red
                 self.draw_piece = self.create_piece(row, column, "red")
             else:
-                self.piece = Piece.no_piece
+                self.piece = Piece.NoPiece
                 self.draw_piece = None
 
         def get_piece_coordinates(self, row, column):
@@ -75,7 +75,7 @@ class CheckersBoard(tk.Canvas):
 
 
         def create_king_piece(self, row, column, color="#444444"):
-            # draw a king piece (polygon?)
+            # TODO: draw a king piece (polygon?)
             pass
 
 
@@ -84,11 +84,11 @@ class CheckersBoard(tk.Canvas):
                 if self.draw_piece:
                     self.canvas.delete(self.draw_piece)  # remove the original piece
 
-                if (new_piece_type == Piece.black or new_piece_type == Piece.red):
-                    color = "black" if new_piece_type == Piece.black else "red"
+                if (new_piece_type == Piece.Black or new_piece_type == Piece.Red):
+                    color = "black" if new_piece_type == Piece.Black else "red"
                     self.draw_piece = self.create_piece(self.row, self.column, color)
-                elif (new_piece_type == Piece.black_king or new_piece_type == Piece.red_king):
-                    color = "black" if new_piece_type == Piece.black else "red"
+                elif (new_piece_type == Piece.BlackKing or new_piece_type == Piece.RedKing):
+                    color = "black" if new_piece_type == Piece.Black else "red"
                     self.draw_piece = self.create_king_piece(self.row, self.column, color)
                 else:
                     self.draw_piece = None  # draw no piece
@@ -96,13 +96,13 @@ class CheckersBoard(tk.Canvas):
             self.piece = new_piece_type
 
         def get_upward_moves(self):
-            return self.get_moves(Direction.upward)
+            return self.get_moves(Direction.Upward)
 
         def get_downward_moves(self):
-            return self.get_moves(Direction.downward)
+            return self.get_moves(Direction.Downward)
 
         def get_king_moves(self):
-            return self.get_moves(Direction.both)
+            return self.get_moves(Direction.Both)
 
         def draw(self):
             pass
@@ -160,15 +160,15 @@ class CheckersBoard(tk.Canvas):
         
         tile = self.tiles[row, column]
         if (tile.piece > 0):
-            return Team.black
+            return Team.Black
         elif (tile.piece < 0):
-            return Team.red
+            return Team.Red
         else:
-            return Team.no_piece
+            return Team.NoPiece
 
     def opposing_teams(self, team1, team2):
-        if ((team1 == Team.red and team2 == Team.black)
-                or (team1 == Team.black and team2 == Team.red)):
+        if ((team1 == Team.Red and team2 == Team.Black)
+                or (team1 == Team.Black and team2 == Team.Red)):
             return True
         else:
             return False
@@ -182,11 +182,11 @@ class CheckersBoard(tk.Canvas):
         this_team = self.check_tile(row, column)
         direction = None
         if (tile.piece == 2 or tile.piece == -2):
-            direction = Direction.both
+            direction = Direction.Both
         elif (tile.piece == 1):
-            direction = Direction.downward
+            direction = Direction.Downward
         elif (tile.piece == -1):
-            direction = Direction.upward
+            direction = Direction.Upward
 
         # check each diagonal direction for moves / jumps
         # x - - - x
@@ -195,42 +195,42 @@ class CheckersBoard(tk.Canvas):
         # - x - x -
         # x - - - x
 
-        if ((direction == Direction.upward or direction == Direction.both)):
+        if ((direction == Direction.Upward or direction == Direction.Both)):
             team_up_left = self.check_tile(row - 1, column - 1)
-            if (team_up_left == Team.no_piece):
+            if (team_up_left == Team.NoPiece):
                 moves.append((row - 1, column - 1))
             elif (self.opposing_teams(this_team, team_up_left)):
                 # check if a jump is possible
                 team_up_left_jump = self.check_tile(row - 2, column - 2)
-                if (team_up_left_jump == Team.no_piece):
+                if (team_up_left_jump == Team.NoPiece):
                     jump_moves.append((row - 2, column - 2))
 
             team_up_right = self.check_tile(row - 1, column + 1)
-            if (team_up_right == Team.no_piece):
+            if (team_up_right == Team.NoPiece):
                 moves.append((row - 1, column + 1))
             elif (self.opposing_teams(this_team, team_up_right)):
                 # check if a jump is possible
                 team_up_right_jump = self.check_tile(row - 2, column + 2)
-                if (team_up_right_jump == Team.no_piece):
+                if (team_up_right_jump == Team.NoPiece):
                     jump_moves.append((row - 2, column + 2))
 
-        if ((direction == Direction.downward or direction == Direction.both)):
+        if ((direction == Direction.Downward or direction == Direction.Both)):
             team_down_left = self.check_tile(row + 1, column - 1)
-            if (team_down_left == Team.no_piece):
+            if (team_down_left == Team.NoPiece):
                 moves.append((row + 1, column - 1))
             elif (self.opposing_teams(this_team, team_down_left)):
                 # check if a jump is possible
                 team_down_left_jump = self.check_tile(row + 2, column - 2)
-                if (team_down_left_jump == Team.no_piece):
+                if (team_down_left_jump == Team.NoPiece):
                     jump_moves.append((row + 2, column - 2))
 
             team_down_right = self.check_tile(row + 1, column + 1)
-            if (team_down_right == Team.no_piece):
+            if (team_down_right == Team.NoPiece):
                 moves.append((row + 1, column + 1))
             elif (self.opposing_teams(this_team, team_down_right)):
                 # check if a jump is possible
                 team_down_right_jump = self.check_tile(row + 2, column + 2)
-                if (team_down_right_jump == Team.no_piece):
+                if (team_down_right_jump == Team.NoPiece):
                     jump_moves.append((row + 2, column + 2))
 
         # capturing moves must be taken before regular moves
@@ -242,13 +242,13 @@ class CheckersBoard(tk.Canvas):
 
     def move_piece(self, source_row, source_column, dest_row, dest_column):
         dest_tile = self.tiles[dest_row, dest_column]
-        if self.tiles[dest_row, dest_column].piece != Piece.no_piece:
+        if self.tiles[dest_row, dest_column].piece != Piece.NoPiece:
             return False # cannot move to an already occupied space
 
         source_tile = self.tiles[source_row, source_column]
 
         dest_tile.update_piece(source_tile.piece)
-        source_tile.update_piece(Piece.no_piece)
+        source_tile.update_piece(Piece.NoPiece)
 
         # update the dictionary
         #self[dest_row, dest_column] = piece
