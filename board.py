@@ -9,12 +9,20 @@ class Direction:
     both = 0
     downward = -1
 
+
 class Piece:
     black_king = 2
     black = 1
     no_piece = 0
     red = -1
     red_king = -2
+
+
+class Team:
+    black = "black"
+    red = "red"
+    no_piece = "no_piece"
+    invalid = "invalid"
 
 
 class CheckersBoard(tk.Canvas):
@@ -87,32 +95,6 @@ class CheckersBoard(tk.Canvas):
 
             self.piece = new_piece_type
 
-
-        def get_moves(self, direction):
-            moves = []
-            row = self.row
-            column = self.column
-            if ((direction == Direction.upward or direction == Direction.both) and self.row != 0):
-                if (row % 2 == 0):
-                    moves.append((row - 1, column))
-                    if (column != 3):
-                        moves.append((row - 1, column + 1))
-                else:
-                    moves.append((row - 1, column))
-                    if (self.column != 0):
-                        moves.append((row - 1, column - 1))
-            if ((direction == Direction.downward or direction == Direction.both) and self.row != 7):
-                if (row % 2 == 0):
-                    moves.append((row + 1, column))
-                    if (column != 3):
-                        moves.append((row + 1, column + 1))
-                else:
-                    moves.append((row + 1, column))
-                    if (column != 0):
-                        moves.append((row + 1, column - 1))
-            
-            return moves
-
         def get_upward_moves(self):
             return self.get_moves(Direction.upward)
 
@@ -147,9 +129,116 @@ class CheckersBoard(tk.Canvas):
                         fill=self.board_color, tags="board")
                     self.tiles[row, column] = self.Tile(self, row, column)
 
-        #self.tiles[0, 1].update_piece(Piece.red)
+        # self.move_piece(5, 0, 4, 1)
+        # self.move_piece(4, 1, 3, 0)
+        # possible_moves = {}
+        # must_jump = False
+
+        # for column in range(8):
+        #     for row in range(8):
+        #         if (self.check_tile(row, column) == Team.black):
+        #             is_jump, moves = self.get_moves(row, column)
+        #             if not moves:
+        #                 continue
+
+        #             if (must_jump and is_jump):
+        #                 possible_moves[row, column] = moves
+        #             elif (not must_jump and is_jump):
+        #                 print "clear"
+        #                 possible_moves.clear()
+        #                 possible_moves[row, column] = moves
+        #                 must_jump = is_jump
+        #             elif (not must_jump and not is_jump):
+        #                 possible_moves[row, column] = moves
+
+        # print possible_moves
+
+    def check_tile(self, row, column):
+        # returns the team of the tile (red, black, or no_piece)
+        if ((row, column) not in self.tiles):
+            return Team.invalid
         
-        #self.redraw(5000)
+        tile = self.tiles[row, column]
+        if (tile.piece > 0):
+            return Team.black
+        elif (tile.piece < 0):
+            return Team.red
+        else:
+            return Team.no_piece
+
+    def opposing_teams(self, team1, team2):
+        if ((team1 == Team.red and team2 == Team.black)
+                or (team1 == Team.black and team2 == Team.red)):
+            return True
+        else:
+            return False
+
+    def get_moves(self, row, column):
+        # returns the possible moves for a piece on the tile (row, column) 
+        moves = []
+        jump_moves = []
+
+        tile = self.tiles[row, column]
+        this_team = self.check_tile(row, column)
+        direction = None
+        if (tile.piece == 2 or tile.piece == -2):
+            direction = Direction.both
+        elif (tile.piece == 1):
+            direction = Direction.downward
+        elif (tile.piece == -1):
+            direction = Direction.upward
+
+        # check each diagonal direction for moves / jumps
+        # x - - - x
+        # - x - x -
+        # - - o - -
+        # - x - x -
+        # x - - - x
+
+        if ((direction == Direction.upward or direction == Direction.both)):
+            team_up_left = self.check_tile(row - 1, column - 1)
+            if (team_up_left == Team.no_piece):
+                moves.append((row - 1, column - 1))
+            elif (self.opposing_teams(this_team, team_up_left)):
+                # check if a jump is possible
+                team_up_left_jump = self.check_tile(row - 2, column - 2)
+                if (team_up_left_jump == Team.no_piece):
+                    jump_moves.append((row - 2, column - 2))
+
+            team_up_right = self.check_tile(row - 1, column + 1)
+            if (team_up_right == Team.no_piece):
+                moves.append((row - 1, column + 1))
+            elif (self.opposing_teams(this_team, team_up_right)):
+                # check if a jump is possible
+                team_up_right_jump = self.check_tile(row - 2, column + 2)
+                if (team_up_right_jump == Team.no_piece):
+                    jump_moves.append((row - 2, column + 2))
+
+        if ((direction == Direction.downward or direction == Direction.both)):
+            team_down_left = self.check_tile(row + 1, column - 1)
+            if (team_down_left == Team.no_piece):
+                moves.append((row + 1, column - 1))
+            elif (self.opposing_teams(this_team, team_down_left)):
+                # check if a jump is possible
+                team_down_left_jump = self.check_tile(row + 2, column - 2)
+                if (team_down_left_jump == Team.no_piece):
+                    jump_moves.append((row + 2, column - 2))
+
+            team_down_right = self.check_tile(row + 1, column + 1)
+            if (team_down_right == Team.no_piece):
+                moves.append((row + 1, column + 1))
+            elif (self.opposing_teams(this_team, team_down_right)):
+                # check if a jump is possible
+                team_down_right_jump = self.check_tile(row + 2, column + 2)
+                if (team_down_right_jump == Team.no_piece):
+                    jump_moves.append((row + 2, column + 2))
+
+        # capturing moves must be taken before regular moves
+        if jump_moves:
+            return (True, jump_moves)
+        else:
+            return (False, moves)
+
 
     def move_piece(self, source_row, source_column, dest_row, dest_column):
         dest_tile = self.tiles[dest_row, dest_column]
@@ -165,12 +254,6 @@ class CheckersBoard(tk.Canvas):
         #self[dest_row, dest_column] = piece
         #del self.pieces[init_row, init_column]
         return True
-
-    def draw(self):
-        # go through the each tile and draw what is necessary
-        for tile in self.tiles:
-            pass
-
 
     # def redraw(self, delay):
     #     self.canvas.itemconfig("rect", fill="#444444")
