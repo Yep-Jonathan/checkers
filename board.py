@@ -17,7 +17,7 @@ class Piece:
     red_king = -2
 
 
-class CheckersBoard(tk.Tk):
+class CheckersBoard(tk.Canvas):
 
     class InvalidTileError(Exception):
         pass
@@ -48,7 +48,7 @@ class CheckersBoard(tk.Tk):
                 self.draw_piece = self.create_piece(row, column, "red")
             else:
                 self.piece = Piece.no_piece
-                self.draw_piece = self.create_piece(row, column)
+                self.draw_piece = None
 
         def get_piece_coordinates(self, row, column):
             x1 = column*self.cellwidth
@@ -73,7 +73,8 @@ class CheckersBoard(tk.Tk):
 
         def update_piece(self, new_piece_type):
             if (new_piece_type != self.piece):
-                self.canvas.delete(self.draw_piece)  # remove the original piece
+                if self.draw_piece:
+                    self.canvas.delete(self.draw_piece)  # remove the original piece
 
                 if (new_piece_type == Piece.black or new_piece_type == Piece.red):
                     color = "black" if new_piece_type == Piece.black else "red"
@@ -82,7 +83,7 @@ class CheckersBoard(tk.Tk):
                     color = "black" if new_piece_type == Piece.black else "red"
                     self.draw_piece = self.create_king_piece(self.row, self.column, color)
                 else:
-                    self.draw_piece = self.create_piece(self.row, self.column)  # draw no piece
+                    self.draw_piece = None  # draw no piece
 
             self.piece = new_piece_type
 
@@ -126,31 +127,26 @@ class CheckersBoard(tk.Tk):
 
 
 
-    def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
-        self.canvas = tk.Canvas(self, width=400, height=400, borderwidth=0, highlightthickness=0)
-        self.canvas.pack(side="top", fill="both", expand="true")
+    def __init__(self, root):
+        tk.Canvas.__init__(self, root, width=400, height=400, borderwidth=0, highlightthickness=0)
         self.rows = 8
         self.columns = 8
-        self.cellwidth = 50
-        self.cellheight = 50
         self.board_color = '#444444'
         
         self.tiles = {}
         for column in range(8):
             for row in range(8):
-                x1 = column*self.cellwidth
-                y1 = row * self.cellheight
-                x2 = x1 + self.cellwidth
-                y2 = y1 + self.cellheight
+                x1 = column * self.Tile.cellwidth
+                y1 = row * self.Tile.cellheight
+                x2 = x1 + self.Tile.cellwidth
+                y2 = y1 + self.Tile.cellheight
                 if ((column + row) % 2 == 0):
-                    self.canvas.create_rectangle(x1, y1, x2, y2, fill="red", tags="emptySpaces")
+                    self.create_rectangle(x1, y1, x2, y2, fill="red", tags="emptySpaces")
                 else:
-                    self.canvas.create_rectangle(x1, y1, x2, y2,
+                    self.create_rectangle(x1, y1, x2, y2,
                         fill=self.board_color, tags="board")
-                    self.tiles[row, column] = self.Tile(self.canvas, row, column)
+                    self.tiles[row, column] = self.Tile(self, row, column)
 
-        self.move_piece(2, 1, 3, 2)
         #self.tiles[0, 1].update_piece(Piece.red)
         
         #self.redraw(5000)
@@ -191,6 +187,8 @@ def close(event):
     sys.exit()
 
 if __name__ == "__main__":
-    app = CheckersBoard()
-    app.bind('<Escape>', close)
+    root = tk.Tk()
+    app = CheckersBoard(root)
+    app.pack()
+    root.bind('<Escape>', close)
     app.mainloop()
