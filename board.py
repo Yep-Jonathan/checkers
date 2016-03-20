@@ -2,7 +2,6 @@
 
 import Tkinter as tk
 import sys
-# import random
 
 class Direction:
     Upward = 1
@@ -18,6 +17,13 @@ class Piece:
     RedKing = -2
 
 
+class TileSpecs:
+    CellWidth = 50
+    CellHeight = 50
+    PieceSpacing = 10
+    BoardColor = "#444444"
+
+
 class Team:
     Black = "black"
     Red = "red"
@@ -31,12 +37,6 @@ class CheckersBoard(tk.Canvas):
         pass
 
     class Tile():
-        cellwidth = 50
-        cellheight = 50
-        piece_spacing = 10
-
-        board_color = "#444444"
-
         # defines a tile square that tells where pieces can move to
         def __init__(self, canvas, row, column):
             if (0 <= row <= 7 and 0 <= column <= 7 and (row + column) % 2 != 0):
@@ -59,16 +59,18 @@ class CheckersBoard(tk.Canvas):
                 self.draw_piece = None
 
         def get_piece_coordinates(self, row, column):
-            x1 = column*self.cellwidth
-            y1 = row * self.cellheight
-            x2 = x1 + self.cellwidth
-            y2 = y1 + self.cellheight
-            return (x1+self.piece_spacing, y1+self.piece_spacing,
-                    x2-self.piece_spacing, y2-self.piece_spacing)
+            # coordinates for drawing a piece
+            x1 = column * TileSpecs.CellWidth
+            y1 = row * TileSpecs.CellHeight
+            x2 = x1 + TileSpecs.CellWidth
+            y2 = y1 + TileSpecs.CellHeight
+            return (x1+TileSpecs.PieceSpacing, y1+TileSpecs.PieceSpacing,
+                    x2-TileSpecs.PieceSpacing, y2-TileSpecs.PieceSpacing)
 
         def get_king_piece_coordinates(self, row, column):
-            x1 = column * self.cellwidth + 10
-            y1 = row * self.cellheight + 15
+            # coordinates for drawing a king piece
+            x1 = column * TileSpecs.CellWidth + 10
+            y1 = row * TileSpecs.CellHeight + 15
 
             x2 = x1
             y2 = y1 + 20
@@ -94,14 +96,14 @@ class CheckersBoard(tk.Canvas):
         def create_piece(self, row, column, color="#444444"):
             return self.canvas.create_oval(*self.get_piece_coordinates(row, column),
                                            fill=color,
-                                           outline=self.board_color,
+                                           outline=TileSpecs.BoardColor,
                                            tags="piece")
 
 
         def create_king_piece(self, row, column, color="#444444"):
             return self.canvas.create_polygon(*self.get_king_piece_coordinates(row, column),
                 fill=color,
-                outline=self.board_color,
+                outline=TileSpecs.BoardColor,
                 tags="piece")
 
 
@@ -134,29 +136,25 @@ class CheckersBoard(tk.Canvas):
             pass
 
 
-
     def __init__(self, root):
         tk.Canvas.__init__(self, root, width=400, height=400, borderwidth=0, highlightthickness=0)
         self.rows = 8
         self.columns = 8
-        self.board_color = '#444444'
+        TileSpecs.BoardColor = '#444444'
         
         self.tiles = {}
         for column in range(8):
             for row in range(8):
-                x1 = column * self.Tile.cellwidth
-                y1 = row * self.Tile.cellheight
-                x2 = x1 + self.Tile.cellwidth
-                y2 = y1 + self.Tile.cellheight
+                x1 = column * TileSpecs.CellWidth
+                y1 = row * TileSpecs.CellHeight
+                x2 = x1 + TileSpecs.CellWidth
+                y2 = y1 + TileSpecs.CellHeight
                 if ((column + row) % 2 == 0):
                     self.create_rectangle(x1, y1, x2, y2, fill="red", tags="emptySpaces")
                 else:
                     self.create_rectangle(x1, y1, x2, y2,
-                        fill=self.board_color, tags="board")
+                        fill=TileSpecs.BoardColor, tags="board")
                     self.tiles[row, column] = self.Tile(self, row, column)
-
-        # self.move_piece(5, 0, 4, 1)
-        # self.move_piece(4, 1, 3, 0)
 
     # inefficient, but okay for now
     def get_black_pieces(self):
@@ -263,7 +261,6 @@ class CheckersBoard(tk.Canvas):
         else:
             return (False, moves)
 
-
     def move_piece(self, source_row, source_column, dest_row, dest_column):
         dest_tile = self.tiles[dest_row, dest_column]
         if self.tiles[dest_row, dest_column].piece != Piece.NoPiece:
@@ -286,24 +283,3 @@ class CheckersBoard(tk.Canvas):
     def remove_piece(self, row, column):
         # remove a piece because it GOT JUMPED
         self.tiles[row, column].update_piece(Piece.NoPiece)
-
-    # def redraw(self, delay):
-    #     self.canvas.itemconfig("rect", fill="#444444")
-    #     self.canvas.itemconfig("pieces", fill="#444444")
-    #     for i in range(10):
-    #         row = random.randint(0,7)
-    #         col = random.randint(0,7)
-    #         if ((col+row) % 2 == 1):
-    #             item_id = self.oval[row,col]
-    #             self.canvas.itemconfig(item_id, fill="red")
-    #     self.after(delay, lambda: self.redraw(delay))
-
-def close(event):
-    sys.exit()
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = CheckersBoard(root)
-    app.pack()
-    root.bind('<Escape>', close)
-    app.mainloop()

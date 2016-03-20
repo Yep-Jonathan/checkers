@@ -5,12 +5,12 @@ import sys
 from board import (CheckersBoard as CB,
                    Team as Team)
 
-
 from human_player import HumanPlayer
+from random_player import RandomPlayer
+
 
 class CheckersGame(object):
     def __init__(self, root, board):
-        # have buttons to push each piece? Is that possible?
         self.root = root
         self.board = board
 
@@ -29,7 +29,7 @@ class CheckersGame(object):
             command=self.start_ai_vs_ai_game)
         self.board.create_window(140, 225, anchor=tk.NW, window=self.AI_vs_AI)
 
-        self.human_vs_human.invoke()  # XXX
+        # self.human_vs_human.invoke()  # XXX
 
     def clear_buttons(self):
         if self.human_vs_AI:
@@ -42,18 +42,26 @@ class CheckersGame(object):
     def start_human_vs_ai_game(self):
         self.clear_buttons()
 
+        self.team_black = HumanPlayer(self, self.board, Team.Black)
+        self.team_red = RandomPlayer(self, self.board, Team.Red)
+
+        self.start_game()
+
     def start_human_vs_human_game(self):
         self.clear_buttons()
 
         self.team_black = HumanPlayer(self, self.board, Team.Black)
         self.team_red = HumanPlayer(self, self.board, Team.Red)
 
-        self.turn = self.team_black
-
-        self.team_black.choose_move()
+        self.start_game()
 
     def start_ai_vs_ai_game(self):
         self.clear_buttons()
+
+    def start_game(self):
+        self.turn = self.team_black
+
+        self.team_black.choose_move()
 
     def select_move(self, source_row, source_column, dest_row, dest_column):
         # execute the move.
@@ -89,6 +97,7 @@ class CheckersGame(object):
             print "RED WINS"
         else:
             print "BLACK WINS"
+
 
 def close(event):
     sys.exit()
