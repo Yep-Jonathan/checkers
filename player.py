@@ -3,12 +3,12 @@
 # abstract class
 class CheckersPlayer(object):
 
-    def __init__(self, game, board, pieces):
+    def __init__(self, game, board, team):
         # pieces should be a list of (row, column) pairs that list all the pieces
         # controlled by this player.
         self.game = game
         self.board = board
-        self.pieces = pieces
+        self.team = team
 
     def choose_move(self):
         raise NotImplementedError()

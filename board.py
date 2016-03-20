@@ -66,6 +66,30 @@ class CheckersBoard(tk.Canvas):
             return (x1+self.piece_spacing, y1+self.piece_spacing,
                     x2-self.piece_spacing, y2-self.piece_spacing)
 
+        def get_king_piece_coordinates(self, row, column):
+            x1 = column * self.cellwidth + 10
+            y1 = row * self.cellheight + 15
+
+            x2 = x1
+            y2 = y1 + 20
+
+            x3 = x2 + 30
+            y3 = y2
+
+            x4 = x3
+            y4 = y3 - 20
+
+            x5 = x4 - 10
+            y5 = y4 + 5
+
+            x6 = x5 - 5
+            y6 = y5 - 10
+
+            x7 = x6 - 5
+            y7 = y6 + 10
+
+            return (x1, y1, x2, y2, x3, y3,
+                x4, y4, x5, y5, x6, y6, x7, y7)
 
         def create_piece(self, row, column, color="#444444"):
             return self.canvas.create_oval(*self.get_piece_coordinates(row, column),
@@ -75,8 +99,10 @@ class CheckersBoard(tk.Canvas):
 
 
         def create_king_piece(self, row, column, color="#444444"):
-            # TODO: draw a king piece (polygon?)
-            pass
+            return self.canvas.create_polygon(*self.get_king_piece_coordinates(row, column),
+                fill=color,
+                outline=self.board_color,
+                tags="piece")
 
 
         def update_piece(self, new_piece_type):
@@ -88,7 +114,7 @@ class CheckersBoard(tk.Canvas):
                     color = "black" if new_piece_type == Piece.Black else "red"
                     self.draw_piece = self.create_piece(self.row, self.column, color)
                 elif (new_piece_type == Piece.BlackKing or new_piece_type == Piece.RedKing):
-                    color = "black" if new_piece_type == Piece.Black else "red"
+                    color = "black" if new_piece_type == Piece.BlackKing else "red"
                     self.draw_piece = self.create_king_piece(self.row, self.column, color)
                 else:
                     self.draw_piece = None  # draw no piece
@@ -131,32 +157,30 @@ class CheckersBoard(tk.Canvas):
 
         # self.move_piece(5, 0, 4, 1)
         # self.move_piece(4, 1, 3, 0)
-        # possible_moves = {}
-        # must_jump = False
 
-        # for column in range(8):
-        #     for row in range(8):
-        #         if (self.check_tile(row, column) == Team.black):
-        #             is_jump, moves = self.get_moves(row, column)
-        #             if not moves:
-        #                 continue
+    # inefficient, but okay for now
+    def get_black_pieces(self):
+        # returns a list of all of black's pieces
+        black_pieces = []
+        for row in range(8):
+            for column in range(8):
+                if self.check_tile(row, column) == Team.Black:
+                    black_pieces.append((row, column))
+        return black_pieces
 
-        #             if (must_jump and is_jump):
-        #                 possible_moves[row, column] = moves
-        #             elif (not must_jump and is_jump):
-        #                 print "clear"
-        #                 possible_moves.clear()
-        #                 possible_moves[row, column] = moves
-        #                 must_jump = is_jump
-        #             elif (not must_jump and not is_jump):
-        #                 possible_moves[row, column] = moves
-
-        # print possible_moves
+    def get_red_pieces(self):
+        # returns a list of all of red's pieces
+        red_pieces = []
+        for row in range(8):
+            for column in range(8):
+                if self.check_tile(row, column) == Team.Red:
+                    red_pieces.append((row, column))
+        return red_pieces
 
     def check_tile(self, row, column):
         # returns the team of the tile (red, black, or no_piece)
         if ((row, column) not in self.tiles):
-            return Team.invalid
+            return Team.Invalid
         
         tile = self.tiles[row, column]
         if (tile.piece > 0):
@@ -173,7 +197,7 @@ class CheckersBoard(tk.Canvas):
         else:
             return False
 
-    def get_moves(self, row, column):
+    def get_possible_moves(self, row, column):
         # returns the possible moves for a piece on the tile (row, column) 
         moves = []
         jump_moves = []
@@ -247,13 +271,21 @@ class CheckersBoard(tk.Canvas):
 
         source_tile = self.tiles[source_row, source_column]
 
-        dest_tile.update_piece(source_tile.piece)
+        # KING ME
+        if (source_tile.piece == Piece.Red and dest_row == 0):
+            dest_tile.update_piece(Piece.RedKing)
+        elif (source_tile.piece == Piece.Black and dest_row == 7):
+            dest_tile.update_piece(Piece.BlackKing)
+        else:
+            dest_tile.update_piece(source_tile.piece)
+        
         source_tile.update_piece(Piece.NoPiece)
 
-        # update the dictionary
-        #self[dest_row, dest_column] = piece
-        #del self.pieces[init_row, init_column]
         return True
+
+    def remove_piece(self, row, column):
+        # remove a piece because it GOT JUMPED
+        self.tiles[row, column].update_piece(Piece.NoPiece)
 
     # def redraw(self, delay):
     #     self.canvas.itemconfig("rect", fill="#444444")
