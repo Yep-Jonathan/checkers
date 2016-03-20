@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Usage: script/bootstrap
+# Sets up required modules for development.
+
+set -e
+
+[[ -d venv ]] || virtualenv venv
+[[ -f venv/bin/activate ]] && source venv/bin/activate
+pip --quiet install --requirement requirements.txt
