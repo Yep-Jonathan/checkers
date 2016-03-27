@@ -1,33 +1,35 @@
 # has the game logic required to play a checkers game
 
 import Tkinter as tk
+import sqlite3 as lite
 import sys
 from board import (CheckersBoard as CB,
                    Team as Team)
 
 from human_player import HumanPlayer
 from random_player import RandomPlayer
+from ai_player import AIPlayer
 
 
 class CheckersGame(object):
-    def __init__(self, root, board):
+    def __init__(self, root, board, training=False):
         self.root = root
         self.board = board
+        if(training is False):
+            self.human_vs_AI = tk.Button(self.root,
+                text="Start 1-player Game",
+                command=self.start_human_vs_ai_game)
+            self.board.create_window(140, 155, anchor=tk.NW, window=self.human_vs_AI)
 
-        self.human_vs_AI = tk.Button(self.root,
-            text="Start 1-player Game",
-            command=self.start_human_vs_ai_game)
-        self.board.create_window(140, 155, anchor=tk.NW, window=self.human_vs_AI)
+            self.human_vs_human = tk.Button(self.root,
+                text="Start 2-player Game",
+                command=self.start_human_vs_human_game)
+            self.board.create_window(140, 190, anchor=tk.NW, window=self.human_vs_human)
 
-        self.human_vs_human = tk.Button(self.root,
-            text="Start 2-player Game",
-            command=self.start_human_vs_human_game)
-        self.board.create_window(140, 190, anchor=tk.NW, window=self.human_vs_human)
-
-        self.AI_vs_AI = tk.Button(self.root,
-            text="Start AI vs AI Game",
-            command=self.start_ai_vs_ai_game)
-        self.board.create_window(140, 225, anchor=tk.NW, window=self.AI_vs_AI)
+            self.AI_vs_AI = tk.Button(self.root,
+                text="Start AI vs AI Game",
+                command=self.start_ai_vs_ai_game)
+            self.board.create_window(140, 225, anchor=tk.NW, window=self.AI_vs_AI)
 
         # self.human_vs_human.invoke()  # XXX
 
@@ -57,6 +59,16 @@ class CheckersGame(object):
 
     def start_ai_vs_ai_game(self):
         self.clear_buttons()
+        self.team_black = AIPlayer(self, self.board, Team.Black)
+        self.team_red = AIPlayer(self, self.board, Team.Red)
+
+        self.start_game()
+
+    def start_ai_training_game(self):
+        self.team_black = AIPlayer(self, self.board, Team.Black)
+        self.team_red = AIPlayer(self, self.board, Team.Red)
+
+        self.start_game()
 
     def start_game(self):
         self.turn = self.team_black
@@ -67,12 +79,12 @@ class CheckersGame(object):
         # execute the move.
         # if the move is a jump, check if that piece can jump again, and if so,
         # let the player to play again
-        
+
         is_jump, _ = self.board.get_possible_moves(source_row, source_column)
 
         # assume move is valid
         self.board.move_piece(source_row, source_column, dest_row, dest_column)
-        
+
         if (is_jump):
             self.board.remove_piece((source_row + dest_row) / 2, (source_column + dest_column) / 2)
 
@@ -93,10 +105,47 @@ class CheckersGame(object):
             self.team_black.choose_move()
 
     def game_over(self):
+        self.losing_configs = []
+        self.winning_configs = []
         if (self.turn == self.team_black):
+            self.losing_configs = self.team_black.board_configs
+            self.winning_configs = self.team_red.board_configs
             print "RED WINS"
         else:
+            self.losing_configs = self.team_red.board_configs
+            self.winning_configs = self.team_black.board_configs
             print "BLACK WINS"
+        self.log_results()
+        exit()
+
+    def log_results(self):
+        conn = lite.connect("temp.db")
+        c = conn.cursor()
+
+        # Create table if not exists
+        tableName = "trainingdata"
+        tableCreationQuery = "CREATE TABLE IF NOT EXISTS " + tableName + " (config text PRIMARY KEY, wins integer, total integer)"
+        c.execute(tableCreationQuery)
+
+
+        for config in self.losing_configs:
+            updateQuery = "UPDATE " + tableName + " SET total = total + 1 WHERE config = '" + str(config) + "'"
+            c.execute(updateQuery)
+            if c.rowcount is 0:
+                insertionQuery = "INSERT INTO " + tableName + " VALUES ('" + str(config) + "', 0 , 1)"
+                c.execute(insertionQuery)
+        conn.commit()
+
+        for config in self.winning_configs:
+            updateQuery = "UPDATE " + tableName + " SET total = total + 1, wins = wins + 1 WHERE config = '" + str(config) + "'"
+            c.execute(updateQuery)
+            if c.rowcount is 0:
+                insertionQuery = "INSERT INTO " + tableName + " VALUES ('" + str(config) + "', 1 , 1)"
+                c.execute(insertionQuery)
+        conn.commit()
+
+        conn.close()
+
 
 
 def close(event):
@@ -109,6 +158,10 @@ if __name__ == "__main__":
     root.bind('<Escape>', close)
     board.pack(side=tk.LEFT)
 
-    CheckersGame(root, board)
+    if (len(sys.argv) > 1 and sys.argv[1] == 'training'):
+        cg = CheckersGame(root, board, True)
+        cg.start_ai_training_game();
+    else:
+        cg = CheckersGame(root, board)
 
     root.mainloop()
