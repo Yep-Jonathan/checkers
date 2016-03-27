@@ -3,6 +3,3 @@
 
 # Virtualenv
 venv/
-
-# Database
-*.db

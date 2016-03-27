@@ -14,10 +14,7 @@ class AIPlayer(CheckersPlayer):
         self.board_configs = []
 
     def choose_move(self):
-        config = []
-        config.append(self.board.get_black_pieces())
-        config.append(self.board.get_red_pieces())
-        self.board_configs.append(config)
+        self.board_configs.append(self.board.get_board_config(self.team))
 
         possible_moves = self.get_possible_moves()
 
