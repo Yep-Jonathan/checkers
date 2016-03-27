@@ -1,5 +1,6 @@
 # A Representation of a checkers board, drawn using Tkinter
 
+import numpy as np
 import Tkinter as tk
 import sys
 
@@ -174,6 +175,26 @@ class CheckersBoard(tk.Canvas):
                 if self.check_tile(row, column) == Team.Red:
                     red_pieces.append((row, column))
         return red_pieces
+
+    def get_board_config(self, team):
+        # return a 8 x 4 array of the pieces
+        # the array will always have the team you specify heading downwards
+
+        # first, construct the array as is, black is (+), red is (-)
+        config = np.zeros((8,4), dtype=np.int)
+        for row in range(8):
+            for column in range(8):
+                if ((row, column) in self.tiles):
+                    piece = self.tiles[row, column].piece
+                    config[row, column / 2] = piece  # enum defined as ints
+
+        if (team == Team.Red):
+            # rotate and invert the array
+            config = np.rot90(config, 2)  # rotate by 180
+            config *= -1
+
+        return config
+
 
     def check_tile(self, row, column):
         # returns the team of the tile (red, black, or no_piece)
