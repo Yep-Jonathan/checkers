@@ -39,6 +39,8 @@ class AIPlayer(CheckersPlayer):
     def select_additional_jump(self, source_row, source_column):
         _, moves = self.board.get_possible_moves(source_row, source_column)
 
+        self.board_configs.append(self.board.get_board_config(self.team))
+
         random_move_number = randint(0,len(moves)-1)
         random_move = moves[random_move_number]
 

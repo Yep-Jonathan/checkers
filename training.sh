@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for (( c=1; c<=1000; c++ ))
+for (( c=1; c<=500; c++ ))
 do
   echo "$c"
   python checkers.py training

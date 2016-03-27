@@ -12,13 +12,14 @@ class TrainedPlayer(CheckersPlayer):
 
     def __init__(self, game, board, team):
         super(TrainedPlayer, self).__init__(game, board, team)
-        self.board_configs = []
+
+    def return_new_config(self, original_config, mv_src, mv_dst):
+        new_config = original_config
+
+        new_config[mv_src]
 
     def choose_move(self):
-        config = []
-        config.append(self.board.get_black_pieces())
-        config.append(self.board.get_red_pieces())
-        self.board_configs.append(config)
+        config = self.board.get_board_config()
 
         possible_moves = self.get_possible_moves()
 
@@ -28,7 +29,7 @@ class TrainedPlayer(CheckersPlayer):
             return
 
         # Choose move from the database
-        # max_possibility = 0.0
+        no_moves_in_db = False
         # conn = lite.connect("temp.db")
         # c = conn.cursor()
         # tableName = "trainingdata"
