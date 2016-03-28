@@ -9,13 +9,16 @@ from board import (CheckersBoard as CB,
 from human_player import HumanPlayer
 from random_player import RandomPlayer
 from ai_player import AIPlayer
+from trained_player import TrainedPlayer
 
 
 class CheckersGame(object):
-    def __init__(self, root, board, training=False):
+    def __init__(self, root, board, training=False, ui=True):
         self.root = root
         self.board = board
-        if(training is False):
+        self.training = training
+        self.ui = ui
+        if(training is False and ui is True):
             self.human_vs_AI = tk.Button(self.root,
                 text="Start 1-player Game",
                 command=self.start_human_vs_ai_game)
@@ -45,7 +48,7 @@ class CheckersGame(object):
         self.clear_buttons()
 
         self.team_black = HumanPlayer(self, self.board, Team.Black)
-        self.team_red = RandomPlayer(self, self.board, Team.Red)
+        self.team_red = TrainedPlayer(self, self.board, Team.Red)
 
         self.start_game()
 
@@ -59,8 +62,14 @@ class CheckersGame(object):
 
     def start_ai_vs_ai_game(self):
         self.clear_buttons()
-        self.team_black = AIPlayer(self, self.board, Team.Black)
+        self.team_black = TrainedPlayer(self, self.board, Team.Black)
         self.team_red = AIPlayer(self, self.board, Team.Red)
+
+        self.start_game()
+
+    def start_ai_vs_ai_no_ui_game(self):
+        self.team_black = AIPlayer(self, self.board, Team.Black)
+        self.team_red = TrainedPlayer(self, self.board, Team.Red)
 
         self.start_game()
 
@@ -105,6 +114,12 @@ class CheckersGame(object):
             self.team_black.choose_move()
 
     def game_over(self):
+        if self.training is False or self.ui is False:
+            if (self.turn == self.team_black):
+                print "RED WINS"
+            else:
+                print "BLACK WINS"
+            exit()
         self.losing_configs = []
         self.winning_configs = []
         if (self.turn == self.team_black):
@@ -161,6 +176,9 @@ if __name__ == "__main__":
     if (len(sys.argv) > 1 and sys.argv[1] == 'training'):
         cg = CheckersGame(root, board, True)
         cg.start_ai_training_game();
+    if (len(sys.argv) > 1 and sys.argv[1] == 'ai_vs_ai'):
+        cg = CheckersGame(root, board, False, False)
+        cg.start_ai_vs_ai_no_ui_game();
     else:
         cg = CheckersGame(root, board)
 
