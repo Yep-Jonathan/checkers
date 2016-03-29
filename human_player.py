@@ -38,6 +38,7 @@ class HumanPlayer(CheckersPlayer):
         # create a button for each checkers piece that you can move
         # have the user choose one
         self.clear_buttons()
+        self.board_configs.append(self.board.get_board_config(self.team))
 
         possible_moves = self.get_possible_moves()
 
@@ -63,7 +64,7 @@ class HumanPlayer(CheckersPlayer):
 
     def select_additional_jump(self, source_row, source_column):
         self.clear_buttons()
-
+        self.board_configs.append(self.board.get_board_config(self.team))
         _, moves = self.board.get_possible_moves(source_row, source_column)
 
         for (dest_row, dest_column) in moves:

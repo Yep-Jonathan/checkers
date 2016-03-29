@@ -114,12 +114,12 @@ class CheckersGame(object):
             self.team_black.choose_move()
 
     def game_over(self):
-        if self.training is False or self.ui is False:
-            if (self.turn == self.team_black):
-                print "RED WINS"
-            else:
-                print "BLACK WINS"
-            exit()
+        # if self.training is False and self.ui is True:
+        #     if (self.turn == self.team_black):
+        #         print "RED WINS"
+        #     else:
+        #         print "BLACK WINS"
+        #     exit()
         self.losing_configs = []
         self.winning_configs = []
         if (self.turn == self.team_black):
@@ -134,6 +134,7 @@ class CheckersGame(object):
         exit()
 
     def log_results(self):
+        print "Logging results"
         conn = lite.connect("temp.db")
         c = conn.cursor()
 
@@ -141,7 +142,6 @@ class CheckersGame(object):
         tableName = "trainingdata"
         tableCreationQuery = "CREATE TABLE IF NOT EXISTS " + tableName + " (config text PRIMARY KEY, wins integer, total integer)"
         c.execute(tableCreationQuery)
-
 
         for config in self.losing_configs:
             updateQuery = "UPDATE " + tableName + " SET total = total + 1 WHERE config = '" + str(config) + "'"

@@ -12,6 +12,7 @@ class AIPlayer(CheckersPlayer):
     def __init__(self, game, board, team):
         super(AIPlayer, self).__init__(game, board, team)
         self.board_configs = []
+        self.ai = True
 
     def choose_move(self):
         self.board_configs.append(self.board.get_board_config(self.team))

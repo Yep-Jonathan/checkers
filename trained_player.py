@@ -9,7 +9,7 @@ from board import TileSpecs
 from board import Team
 import time
 
-def return_new_config(original_config, mv_src, mv_dst, team):
+def return_new_config(original_config, mv_src, mv_dst, team, recursion=False):
 
     if (team == Team.Red):
         new_src = (7-mv_src[0], 7-mv_src[1])
@@ -35,9 +35,12 @@ class TrainedPlayer(CheckersPlayer):
 
     def __init__(self, game, board, team):
         super(TrainedPlayer, self).__init__(game, board, team)
+        self.board_configs = []
+        self.ai = True
 
     def choose_move(self):
         possible_moves = self.get_possible_moves()
+        self.board_configs.append(self.board.get_board_config(self.team))
 
         # game ends if a player is unable to move
         if not possible_moves:
@@ -51,8 +54,13 @@ class TrainedPlayer(CheckersPlayer):
             ai_move_src = possible_moves.items()[move_row][0]
             for move_column in range (0,len(move_list)):
                 ai_move_dest = move_list[move_column]
-                next_config = [ai_move_src, ai_move_dest, return_new_config(self.board.get_board_config(self.team), ai_move_src, ai_move_dest, self.team)]
+                next_config = [ai_move_src, ai_move_dest, return_new_config(self.board.get_board_config(self.team), ai_move_src, ai_move_dest, self.team, True)]
                 next_configs.append(next_config)
+        #
+        # print "Possible configs"
+        # for config in next_configs:
+        #     print config[2]
+
 
         max_possibility = 0.0
         config_index = -1
@@ -71,15 +79,17 @@ class TrainedPlayer(CheckersPlayer):
 
         conn.close()
 
-
+        ai_move_src
+        ai_move_dest
         if config_index >=0:
             print "MAKING DB MOVE"
-            mv_src = next_configs[config_index][0]
-            mv_dst = next_configs[config_index][1]
-            self.select_move(mv_src[0], mv_src[1], mv_dst[0], mv_dst[1])
+            ai_move_src = next_configs[config_index][0]
+            ai_move_dest = next_configs[config_index][1]
+            self.select_move(ai_move_src[0], ai_move_src[1], ai_move_dest[0], ai_move_dest[1])
         else:
             #randomly choose a move
             print "MAKING RANDOM MOVE"
+
             move_row = randint(0, len(possible_moves)-1)
             move_list = possible_moves.items()[move_row][1]
             move_column = randint(0, len(move_list)-1)
@@ -88,12 +98,14 @@ class TrainedPlayer(CheckersPlayer):
             ai_move_dest = move_list[move_column]
 
             self.select_move(ai_move_src[0], ai_move_src[1], ai_move_dest[0], ai_move_dest[1])
+        self.board_configs.append(return_new_config(self.board.get_board_config(self.team) ,ai_move_src, ai_move_dest, self.team))
 
     def select_move(self, source_row, source_column, dest_row, dest_column):
         self.game.select_move(source_row, source_column, dest_row, dest_column)
 
     def select_additional_jump(self, source_row, source_column):
         _, moves = self.board.get_possible_moves(source_row, source_column)
+        self.board_configs.append(self.board.get_board_config(self.team))
 
         random_move_number = randint(0,len(moves)-1)
         random_move = moves[random_move_number]

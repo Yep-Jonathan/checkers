@@ -11,6 +11,7 @@ class CheckersPlayer(object):
         self.game = game
         self.board = board
         self.team = team
+        self.board_configs = []
 
         if self.team == Team.Black:
             self.get_pieces = self.board.get_black_pieces
@@ -32,7 +33,7 @@ class CheckersPlayer(object):
         must_jump = False
 
         for row, column in self.get_pieces():
-            
+
             is_jump, moves = self.board.get_possible_moves(row, column)
             if not moves:
                 continue
