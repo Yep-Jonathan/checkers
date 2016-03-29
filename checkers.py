@@ -9,6 +9,7 @@ from board import (CheckersBoard as CB,
 from human_player import HumanPlayer
 from random_player import RandomPlayer
 from ai_player import AIPlayer
+from mm_player import MMPlayer
 from trained_player import TrainedPlayer
 
 
@@ -48,7 +49,7 @@ class CheckersGame(object):
         self.clear_buttons()
 
         self.team_black = HumanPlayer(self, self.board, Team.Black)
-        self.team_red = TrainedPlayer(self, self.board, Team.Red)
+        self.team_red = MMPlayer(self, self.board, Team.Red)
 
         self.start_game()
 
@@ -62,14 +63,14 @@ class CheckersGame(object):
 
     def start_ai_vs_ai_game(self):
         self.clear_buttons()
-        self.team_black = TrainedPlayer(self, self.board, Team.Black)
-        self.team_red = AIPlayer(self, self.board, Team.Red)
+        self.team_black = MMPlayer(self, self.board, Team.Black)
+        self.team_red = MMPlayer(self, self.board, Team.Red)
 
         self.start_game()
 
     def start_ai_vs_ai_no_ui_game(self):
-        self.team_black = AIPlayer(self, self.board, Team.Black)
-        self.team_red = TrainedPlayer(self, self.board, Team.Red)
+        self.team_black = MMPlayer(self, self.board, Team.Black)
+        self.team_red = MMPlayer(self, self.board, Team.Red)
 
         self.start_game()
 
@@ -130,7 +131,7 @@ class CheckersGame(object):
             self.losing_configs = self.team_red.board_configs
             self.winning_configs = self.team_black.board_configs
             print "BLACK WINS"
-        self.log_results()
+        # self.log_results()
         exit()
 
     def log_results(self):
