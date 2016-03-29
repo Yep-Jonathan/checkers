@@ -9,12 +9,14 @@ from board import (CheckersBoard as CB,
 from human_player import HumanPlayer
 from random_player import RandomPlayer
 from ai_player import AIPlayer
+from mlp_player import MLPPlayer
 
 
 class CheckersGame(object):
     def __init__(self, root, board, training=False):
         self.root = root
         self.board = board
+        self.turn_count = 0
         if(training is False):
             self.human_vs_AI = tk.Button(self.root,
                 text="Start 1-player Game",
@@ -45,7 +47,7 @@ class CheckersGame(object):
         self.clear_buttons()
 
         self.team_black = HumanPlayer(self, self.board, Team.Black)
-        self.team_red = RandomPlayer(self, self.board, Team.Red)
+        self.team_red = MLPPlayer(self, self.board, Team.Red)
 
         self.start_game()
 
@@ -59,13 +61,13 @@ class CheckersGame(object):
 
     def start_ai_vs_ai_game(self):
         self.clear_buttons()
-        self.team_black = AIPlayer(self, self.board, Team.Black)
-        self.team_red = AIPlayer(self, self.board, Team.Red)
+        self.team_black = MLPPlayer(self, self.board, Team.Black)
+        self.team_red = MLPPlayer(self, self.board, Team.Red)
 
         self.start_game()
 
     def start_ai_training_game(self):
-        self.team_black = AIPlayer(self, self.board, Team.Black)
+        self.team_black = MLPPlayer(self, self.board, Team.Black)
         self.team_red = AIPlayer(self, self.board, Team.Red)
 
         self.start_game()
@@ -97,6 +99,9 @@ class CheckersGame(object):
             self.next_turn()
 
     def next_turn(self):
+        self.turn_count += 1
+        if self.turn_count >= 10000:
+            self.game_over()  # stalemate condition
         if (self.turn == self.team_black):
             self.turn = self.team_red
             self.team_red.choose_move()
@@ -107,14 +112,30 @@ class CheckersGame(object):
     def game_over(self):
         self.losing_configs = []
         self.winning_configs = []
+        if self.turn_count >= 10000:
+            # stalemates aren't that bad for each team
+            if (hasattr(self.team_black, "mlp")):
+                self.team_black.train(0.2)
+            if (hasattr(self.team_red, "mlp")):
+                self.team_red.train(0.2)
+            exit()  # don't log results?
         if (self.turn == self.team_black):
             self.losing_configs = self.team_black.board_configs
             self.winning_configs = self.team_red.board_configs
+            if (hasattr(self.team_black, "mlp")):
+                self.team_black.train(-1)
+            if (hasattr(self.team_red, "mlp")):
+                self.team_red.train(1)
             print "RED WINS"
         else:
             self.losing_configs = self.team_red.board_configs
             self.winning_configs = self.team_black.board_configs
+            if (hasattr(self.team_black, "mlp")):
+                self.team_black.train(1)
+            if (hasattr(self.team_red, "mlp")):
+                self.team_red.train(-1)
             print "BLACK WINS"
+
         self.log_results()
         exit()
 
@@ -160,7 +181,7 @@ if __name__ == "__main__":
 
     if (len(sys.argv) > 1 and sys.argv[1] == 'training'):
         cg = CheckersGame(root, board, True)
-        cg.start_ai_training_game();
+        cg.start_ai_training_game()
     else:
         cg = CheckersGame(root, board)
 

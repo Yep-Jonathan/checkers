@@ -12,6 +12,7 @@ class HumanPlayer(CheckersPlayer):
 
         # use buttons to move pieces.  Ugly, but w/e
         self.buttons = []
+        self.board_configs = []
 
     def clear_buttons(self):
         for button in self.buttons:
