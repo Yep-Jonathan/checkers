@@ -27,11 +27,13 @@ class MMPlayer(CheckersPlayer):
         return sum([sum(x) for x in board])
 
     def check_move(self, board, src_x, src_y, dst_x, dst_y):
+        # TODO: update board based on suggested dst
         return src_x, src_y, dst_x, dst_y, self.evaluate(board)
 
     def choose_move(self):
         board_config = self.board.get_board_config(self.team)
         self.board_configs.append(board_config)
+        # generate 8x8 board for evaluation
         board_config = expand_board_config(board_config)
 
         possible_moves = self.get_possible_moves()
@@ -41,20 +43,17 @@ class MMPlayer(CheckersPlayer):
             self.game.game_over()
             return
 
+        # calculate scores of each possible board position
         scores = []
         for src, dst_list in possible_moves.iteritems():
             for dst in dst_list:
                 scores.append(self.check_move(board_config, src[0], src[1], dst[0], dst[1]))
 
-        # randomly choose a move
-        move_row = np.random.randint(len(possible_moves))
-        move_list = possible_moves.items()[move_row][1]
-        move_column = np.random.randint(len(move_list))
+        # sort scores and use the last one
+        best = sorted(scores, key=lambda x: x[4])[-1]
+        # print("best move: {}".format(best))
 
-        ai_move_src = possible_moves.items()[move_row][0]
-        ai_move_dest = move_list[move_column]
-
-        self.select_move(ai_move_src[0], ai_move_src[1], ai_move_dest[0], ai_move_dest[1])
+        self.select_move(best[0], best[1], best[2], best[3])
 
     def select_move(self, source_row, source_column, dest_row, dest_column):
         self.game.select_move(source_row, source_column, dest_row, dest_column)
@@ -62,9 +61,15 @@ class MMPlayer(CheckersPlayer):
     def select_additional_jump(self, source_row, source_column):
         _, moves = self.board.get_possible_moves(source_row, source_column)
 
-        self.board_configs.append(self.board.get_board_config(self.team))
+        board_config = self.board.get_board_config(self.team)
+        self.board_configs.append(board_config)
 
-        random_move_number = np.random.randint(len(moves))
-        random_move = moves[random_move_number]
+        scores = []
+        for move in moves:
+            scores.append(self.check_move(board_config, source_row, source_column, move[0], move[1]))
 
-        self.select_move(source_row, source_column, random_move[0], random_move[1])
+        # sort scores and use the last one
+        best = sorted(scores, key=lambda x: x[4])[-1]
+        # print("best addl move: {}".format(best))
+
+        self.select_move(best[0], best[1], best[2], best[3])
