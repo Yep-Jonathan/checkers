@@ -142,7 +142,7 @@ class CheckersBoard(tk.Canvas):
         self.rows = 8
         self.columns = 8
         TileSpecs.BoardColor = '#444444'
-        
+
         self.tiles = {}
         for column in range(8):
             for row in range(8):
@@ -195,12 +195,31 @@ class CheckersBoard(tk.Canvas):
 
         return config
 
+        def get_8_board_config(self, team):
+        # return a 8 x 8 array of the pieces
+        # the array will always have the team you specify heading downwards
+
+        # first, construct the array as is, black is (+), red is (-)
+        config = np.zeros((8,8), dtype=np.int)
+        for row in range(8):
+            for column in range(8):
+                if ((row, column) in self.tiles):
+                    piece = self.tiles[row, column].piece
+                    config[row, column] = piece  # enum defined as ints
+
+        if (team == Team.Red):
+            # rotate and invert the array
+            config = np.rot90(config, 2)  # rotate by 180
+            config *= -1
+
+        return config
+
 
     def check_tile(self, row, column):
         # returns the team of the tile (red, black, or no_piece)
         if ((row, column) not in self.tiles):
             return Team.Invalid
-        
+
         tile = self.tiles[row, column]
         if (tile.piece > 0):
             return Team.Black
@@ -217,7 +236,7 @@ class CheckersBoard(tk.Canvas):
             return False
 
     def get_possible_moves(self, row, column):
-        # returns the possible moves for a piece on the tile (row, column) 
+        # returns the possible moves for a piece on the tile (row, column)
         moves = []
         jump_moves = []
 
@@ -296,7 +315,7 @@ class CheckersBoard(tk.Canvas):
             dest_tile.update_piece(Piece.BlackKing)
         else:
             dest_tile.update_piece(source_tile.piece)
-        
+
         source_tile.update_piece(Piece.NoPiece)
 
         return True
