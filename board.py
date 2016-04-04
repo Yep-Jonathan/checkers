@@ -195,7 +195,7 @@ class CheckersBoard(tk.Canvas):
 
         return config
 
-        def get_8_board_config(self, team):
+    def get_8_board_config(self, team):
         # return a 8 x 8 array of the pieces
         # the array will always have the team you specify heading downwards
 
