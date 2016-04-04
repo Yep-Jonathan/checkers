@@ -39,7 +39,7 @@ def get_moves_per_piece(board_config, row, column):
     if board_config[row][column] == 2:
         if (column) - 1 >= 0 and row > 0 and board_config[row-1][(column)-1] == 0:
             destinations.append((row-1,(column)-1 ))
-        if (column) + 1 <= 7 and row > 0 and board_config[row+1][(column)+1] == 0:
+        if (column) + 1 <= 7 and row > 0 and board_config[row-1][(column)+1] == 0:
             destinations.append((row-1,(column)+1 ))
 
     # king can jump up

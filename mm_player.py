@@ -2,7 +2,21 @@
 """
 
 import numpy as np
+
+from board import Piece
 from player import CheckersPlayer
+from trained_player import lookahead_config
+
+SCALING = np.array([
+    [4, 4, 4, 4],
+    [4, 3, 3, 3],
+    [3, 2, 2, 4],
+    [4, 2, 1, 3],
+    [3, 1, 2, 4],
+    [4, 2, 2, 3],
+    [3, 3, 3, 4],
+    [4, 4, 4, 4]
+])
 
 
 def expand_board_config(board):
@@ -24,10 +38,11 @@ class MMPlayer(CheckersPlayer):
         self.ai = True
 
     def evaluate(self, board):
-        return sum([sum(x) for x in board])
+        scaled = np.multiply(expand_board_config(SCALING), board)
+        piece_diff = sum([sum(x) for x in scaled])
+        return piece_diff
 
     def check_move(self, board, src_x, src_y, dst_x, dst_y):
-        # TODO: update board based on suggested dst
         return src_x, src_y, dst_x, dst_y, self.evaluate(board)
 
     def choose_move(self):
@@ -43,15 +58,21 @@ class MMPlayer(CheckersPlayer):
             self.game.game_over()
             return
 
-        # calculate scores of each possible board position
+        lookahead = lookahead_config(self.board.get_8_board_config(self.team), self.team, lookahead=1)
         scores = []
-        for src, dst_list in possible_moves.iteritems():
-            for dst in dst_list:
-                scores.append(self.check_move(board_config, src[0], src[1], dst[0], dst[1]))
+
+        # calculate scores of each possible board position
+        if lookahead:
+            for src, dst, new_board in lookahead:
+                scores.append(self.check_move(new_board, src[0], src[1], dst[0], dst[1]))
+        else:
+            for src, dst_list in possible_moves.iteritems():
+                for dst in dst_list:
+                    scores.append(self.check_move(board_config, src[0], src[1], dst[0], dst[1]))
 
         # sort scores and use the last one
         best = sorted(scores, key=lambda x: x[4])[-1]
-        # print("best move: {}".format(best))
+        print("best move: {}".format(best))
 
         self.select_move(best[0], best[1], best[2], best[3])
 
@@ -64,12 +85,18 @@ class MMPlayer(CheckersPlayer):
         board_config = self.board.get_board_config(self.team)
         self.board_configs.append(board_config)
 
+        lookahead = lookahead_config(self.board.get_8_board_config(self.team), self.team)
         scores = []
-        for move in moves:
-            scores.append(self.check_move(board_config, source_row, source_column, move[0], move[1]))
+
+        if lookahead:
+            for src, dst, new_board in lookahead:
+                scores.append(self.check_move(new_board, src[0], src[1], dst[0], dst[1]))
+        else:
+            for move in moves:
+                scores.append(self.check_move(board_config, source_row, source_column, move[0], move[1]))
 
         # sort scores and use the last one
         best = sorted(scores, key=lambda x: x[4])[-1]
-        # print("best addl move: {}".format(best))
+        print("best addl move: {}".format(best))
 
         self.select_move(best[0], best[1], best[2], best[3])
