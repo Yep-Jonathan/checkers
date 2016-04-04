@@ -1,0 +1,14 @@
+#!/bin/bash
+
+GAMES=${1:-10}
+for (( c=1; c<="${GAMES}"; c++ ))
+do
+  echo "$c"
+  python checkers.py ai_vs_ai >>output 2>&1
+done
+
+wins=$(grep -c "BLACK WINS" output)
+losses=$(grep -c "RED WINS" output)
+ties=$((GAMES - $((wins + losses))))
+echo "${wins}W ${losses}L ${ties}T"
+rm output

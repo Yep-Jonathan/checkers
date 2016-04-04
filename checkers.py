@@ -64,13 +64,13 @@ class CheckersGame(object):
     def start_ai_vs_ai_game(self):
         self.clear_buttons()
         self.team_black = MMPlayer(self, self.board, Team.Black)
-        self.team_red = MMPlayer(self, self.board, Team.Red)
+        self.team_red = RandomPlayer(self, self.board, Team.Red)
 
         self.start_game()
 
     def start_ai_vs_ai_no_ui_game(self):
         self.team_black = MMPlayer(self, self.board, Team.Black)
-        self.team_red = MMPlayer(self, self.board, Team.Red)
+        self.team_red = RandomPlayer(self, self.board, Team.Red)
 
         self.start_game()
 
