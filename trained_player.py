@@ -132,13 +132,7 @@ class TrainedPlayer(CheckersPlayer):
 
     def choose_move(self):
         possible_moves = self.get_possible_moves()
-        self.board_configs.append(self.board.get_board_config(self.team))
-        print "BOARD"
-        print self.board.get_8_board_config(self.team)
-
-
-        print lookahead_config(self.board.get_8_board_config(self.team), self.team, 2)
-        print "DONE"
+        self.board_configs.append(self.board.get_8_board_config(self.team))
         # game ends if a player is unable to move
         if not possible_moves:
             self.game.game_over()
@@ -151,13 +145,8 @@ class TrainedPlayer(CheckersPlayer):
             ai_move_src = possible_moves.items()[move_row][0]
             for move_column in range (0,len(move_list)):
                 ai_move_dest = move_list[move_column]
-                next_config = [ai_move_src, ai_move_dest, return_new_config(self.board.get_board_config(self.team), ai_move_src, ai_move_dest)]
+                next_config = [ai_move_src, ai_move_dest, return_new_config(self.board.get_8_board_config(self.team), ai_move_src, ai_move_dest)]
                 next_configs.append(next_config)
-        #
-        # print "Possible configs"
-        # for config in next_configs:
-        #     print config[2]
-
 
         max_possibility = 0.0
         config_index = -1

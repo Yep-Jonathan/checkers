@@ -195,11 +195,11 @@ class CheckersBoard(tk.Canvas):
 
         return config
 
-        def get_8_board_config(self, team):
-        # return a 8 x 8 array of the pieces
-        # the array will always have the team you specify heading downwards
+    def get_8_board_config(self, team):
+    # return a 8 x 8 array of the pieces
+    # the array will always have the team you specify heading downwards
 
-        # first, construct the array as is, black is (+), red is (-)
+    # first, construct the array as is, black is (+), red is (-)
         config = np.zeros((8,8), dtype=np.int)
         for row in range(8):
             for column in range(8):

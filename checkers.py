@@ -134,7 +134,6 @@ class CheckersGame(object):
         exit()
 
     def log_results(self):
-        print "Logging results"
         conn = lite.connect("temp.db")
         c = conn.cursor()
 
