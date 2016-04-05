@@ -3,9 +3,9 @@
 
 import numpy as np
 
-from board import Piece
+from board import Team
 from player import CheckersPlayer
-from trained_player import lookahead_config
+from trained_player import lookahead_config, invert_config
 
 SCALING = np.array([
     [4, 4, 4, 4],
@@ -37,10 +37,16 @@ class MMPlayer(CheckersPlayer):
         self.board_configs = []
         self.ai = True
 
+    def opponent(self):
+        if self.team == Team.Black:
+            return Team.Red
+        elif self.team == Team.Red:
+            return Team.Black
+
     def evaluate(self, board):
         scaled = np.multiply(expand_board_config(SCALING), board)
         piece_diff = sum([sum(x) for x in scaled])
-        return piece_diff
+        return -piece_diff
 
     def check_move(self, board, src_x, src_y, dst_x, dst_y):
         return src_x, src_y, dst_x, dst_y, self.evaluate(board)
@@ -58,13 +64,20 @@ class MMPlayer(CheckersPlayer):
             self.game.game_over()
             return
 
-        lookahead = lookahead_config(self.board.get_8_board_config(self.team), self.team, lookahead=1)
+        lookahead1 = lookahead_config(self.board.get_8_board_config(self.team), self.team)
         scores = []
 
         # calculate scores of each possible board position
-        if lookahead:
-            for src, dst, new_board in lookahead:
-                scores.append(self.check_move(new_board, src[0], src[1], dst[0], dst[1]))
+        if lookahead1:
+            for src1, dst1, new_board1 in lookahead1:
+                min_score = self.evaluate(new_board1)
+                lookahead2 = lookahead_config(invert_config(new_board1), self.opponent())
+                if lookahead2:
+                    scores2 = []
+                    for src2, dst2, new_board2 in lookahead2:
+                        scores2.append(self.check_move(new_board2, src2[0], src2[1], dst2[0], dst2[1]))
+                    min_score = min(map(lambda x: x[4], scores2))
+                scores.append((src1[0], src1[1], dst1[0], dst1[1], min_score))
         else:
             for src, dst_list in possible_moves.iteritems():
                 for dst in dst_list:
